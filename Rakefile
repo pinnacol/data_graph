@@ -58,22 +58,6 @@ Rake::RDocTask.new(:rdoc) do |rdoc|
 end
 
 #
-# Dependency tasks
-#
-
-desc 'Bundle dependencies'
-task :bundle do
-  opts = %w{prd acp qa tst}.include?(ENV['WCIS_ENV']) ? ' --without=development' : ''
-  output = `bundle check 2>&1`
-  
-  unless $?.to_i == 0
-    puts output
-    sh "bundle install#{opts} 2>&1"
-    puts
-  end
-end
-
-#
 # Test tasks
 #
 
