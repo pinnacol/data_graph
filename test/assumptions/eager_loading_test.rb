@@ -30,13 +30,14 @@ class EagerLoadingTest < Test::Unit::TestCase
   end
 
   # Illustrates variability regarding where conditions are evaluated (not
-  # exactly sure why)
+  # exactly sure why).  Note the second variation has become more consistent
+  # in AR3.  Before it would add a nil between "Research" and "Accounting"
   def test_eager_loading_with_condition_on_hmt_association
     depts = Job.find(4).depts
     assert_equal ["Research", "Research", "Accounting"], depts.collect {|dept| dept.name }
 
     depts = Job.find(4, :include => :depts).depts
-    assert_equal ["Research", "Research", nil, "Accounting"], depts.collect {|dept| dept.nil? ? nil : dept.name }
+    assert_equal ["Research", "Research", "Accounting"], depts.collect {|dept| dept.nil? ? nil : dept.name }
 
     depts = Job.find(4, :include => :depts, :conditions => "depts.name like '%c%'").depts
     assert_equal ["Research", "Accounting"], depts.collect {|dept| dept.name }
