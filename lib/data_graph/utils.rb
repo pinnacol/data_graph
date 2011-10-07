@@ -10,11 +10,7 @@ module DataGraph
     end
 
     def foreign_key(assoc)
-      # actually returns options[:foreign_key], or the default foreign key
-      foreign_key = assoc.primary_key_name
-
-      # cpk returns a csv string
-      foreign_key.to_s.split(',')
+      [*assoc.primary_key_name].collect {|key| key.to_s }
     end
 
     def reference_key(assoc)
