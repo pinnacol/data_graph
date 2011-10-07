@@ -1,3 +1,8 @@
+# require thread before active record because rubygems no longer does so --
+# see http://www.ruby-forum.com/topic/1193619 (this can go away in at least
+# active_record 2.3.11)
+require 'thread'
+
 require 'active_record'
 ActiveRecord.load_all!
 
