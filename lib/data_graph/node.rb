@@ -23,7 +23,7 @@ module DataGraph
       # including to_json, end up breaking as a result.
       #
       # Consider it a lesson in being too smart with method_missing.
-      if !model.generated_methods?
+      if !model.attribute_methods_generated?
         model.define_attribute_methods
       end
 

@@ -138,9 +138,9 @@ class NodeTest < Test::Unit::TestCase
   end
 
   def test_initialize_define_attribute_methods
-    assert_equal false, DefineAttributeMethodsClass.generated_methods?
+    assert_equal false, DefineAttributeMethodsClass.attribute_methods_generated?
     Node.new(DefineAttributeMethodsClass)
-    assert_equal true, DefineAttributeMethodsClass.generated_methods?
+    assert_equal true, DefineAttributeMethodsClass.attribute_methods_generated?
   end
 
   #
