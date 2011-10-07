@@ -1,7 +1,3 @@
 module DataGraph
-  MAJOR = 1
-  MINOR = 0
-  TINY = 1
-
-  VERSION="#{MAJOR}.#{MINOR}.#{TINY}"
+  VERSION = "1.0.1"
 end
