@@ -10,7 +10,7 @@ module DataGraph
     end
 
     def foreign_key(assoc)
-      [*assoc.primary_key_name].collect {|key| key.to_s }
+      [*assoc.foreign_key].collect {|key| key.to_s }
     end
 
     def reference_key(assoc)
@@ -20,7 +20,7 @@ module DataGraph
 
     def cpk?(assoc)
       assoc = assoc.through_reflection if assoc.through_reflection
-      assoc.primary_key_name.to_s.include?(',')
+      assoc.foreign_key.to_s.include?(',')
     end
 
     def patherize_attrs(attrs, nest_paths=[], paths=[], prefix='')
