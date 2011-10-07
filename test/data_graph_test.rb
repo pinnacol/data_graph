@@ -3,7 +3,7 @@ require 'data_graph'
 
 class DataGraphTest < Test::Unit::TestCase
   include DatabaseTest
-  
+
   #
   # Model.data_graph test
   #
@@ -12,30 +12,30 @@ class DataGraphTest < Test::Unit::TestCase
     dg = Job.data_graph
     assert_equal DataGraph::Graph, dg.class
   end
-  
+
   def test_data_graphs_can_be_loaded_with_a_to_json_options_hash
     opts = {
-      :only => ['first_name', 'last_name'], 
+      :only => ['first_name', 'last_name'],
       :include => {
         :job => {
           :only => ['name']
         }
       }
     }
-    
+
     json = Emp.data_graph(opts).find(:first).to_json(opts)
-    
+
     assert_equal({
       'first_name' => 'Kim',
       'last_name'  => 'King',
       'job' => {'name' => 'President'}
     }, ActiveSupport::JSON.decode(json))
   end
-  
+
   class CpkOne < ActiveRecord::Base
     set_table_name 'one'
     set_primary_keys :a, :b
-    
+
     belongs_to :cpk_two, :primary_key => :q, :foreign_key => :p
     has_many :cpk_twos, :foreign_key => [:x, :y]
   end
@@ -48,23 +48,23 @@ class DataGraphTest < Test::Unit::TestCase
   def test_data_graphs_can_load_cpk_associations
     fixture %q{
       create table one (
-        a number, 
-        b number, 
+        a number,
+        b number,
         p number,
         primary key(a, b)
       );
-      
+
       create table two (
-        x number, 
-        y number, 
+        x number,
+        y number,
         q number,
         primary key(q)
       );
-      
+
       insert into one values (1, 1, 1);
       insert into one values (1, 2, 2);
       insert into one values (2, 1, 3);
-      
+
       insert into two values (1, 1, 3);
       insert into two values (1, 2, 2);
       insert into two values (2, 1, 1);
@@ -74,7 +74,7 @@ class DataGraphTest < Test::Unit::TestCase
     }
 
     opts = {
-      :only => ['p'], 
+      :only => ['p'],
       :include => {
         :cpk_two => {
           :only => ['q']
@@ -84,11 +84,11 @@ class DataGraphTest < Test::Unit::TestCase
         }
       }
     }
-    
+
     json = CpkOne.data_graph(opts).find(:all).to_json(opts)
-    
+
     assert_equal [
-      { 
+      {
         'p' => 1,
         'cpk_two'  => {'q' => 1},
         'cpk_twos' => [{'q' => 3}]
