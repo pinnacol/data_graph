@@ -1,6 +1,6 @@
 require 'rubygems'
-require 'bundler'
-Bundler.setup
+require 'bundler/setup'
+$:.unshift File.expand_path('../models', __FILE__)
 
 module WarnFilter
   FILTER_PATHS = ENV['GEM_PATH'].split(':') + [Bundler.bundle_path.to_s] + [File.expand_path('vendor')]
