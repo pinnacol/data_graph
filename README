@@ -34,15 +34,16 @@ DataGraph selects data using a syntax based on the serialization methods.
 
 Any number of associations may be specified this way, and to any nesting
 depth. DataGraph always uses a 'one query per-association' strategy and never
-reverts to left outer joins the way include sometimes will.
+reverts to left outer joins the way include {sometimes
+will}[https://github.com/rails/rails/blob/v2.3.8/activerecord/lib/active_record/association_preload.rb#L8].
 
 == Installation
 
-DataGraph is available as a gem on {Gemcutter}[http://gemcutter.org/gems/data_graph]
+DataGraph is available as a {gem}[http://rubygems.org/gems/data_graph]
 
   % gem install data_graph
 
-== Info 
+== Info
 
-Developer:: {Simon Chiang}[http://bahuvrihi.wordpress.com]
+Developer:: {Simon Chiang}[http://github.com/thinkerbot]
 License:: {MIT-Style}[link:files/License_txt.html]
