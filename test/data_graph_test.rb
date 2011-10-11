@@ -26,9 +26,11 @@ class DataGraphTest < Test::Unit::TestCase
     json = Emp.data_graph(opts).find(:first).to_json(opts)
 
     assert_equal({
-      'first_name' => 'Kim',
-      'last_name'  => 'King',
-      'job' => {'name' => 'President'}
+      'emp' => {
+        'first_name' => 'Kim',
+        'last_name'  => 'King',
+        'job' => {'name' => 'President'}
+      }
     }, ActiveSupport::JSON.decode(json))
   end
 
@@ -48,16 +50,16 @@ class DataGraphTest < Test::Unit::TestCase
   def test_data_graphs_can_load_cpk_associations
     fixture %q{
       create table one (
-        a number,
-        b number,
-        p number,
+        a integer,
+        b integer,
+        p integer,
         primary key(a, b)
       );
 
       create table two (
-        x number,
-        y number,
-        q number,
+        x integer,
+        y integer,
+        q integer,
         primary key(q)
       );
 
@@ -89,17 +91,23 @@ class DataGraphTest < Test::Unit::TestCase
 
     assert_equal [
       {
-        'p' => 1,
-        'cpk_two'  => {'q' => 1},
-        'cpk_twos' => [{'q' => 3}]
+        'cpk_one' => {
+          'p' => 1,
+          'cpk_two'  => {'q' => 1},
+          'cpk_twos' => [{'q' => 3}]
+        }
       },{
-        'p' => 2,
-        'cpk_two'  => {'q' => 2},
-        'cpk_twos' => [{'q' => 2}]
+        'cpk_one' => {
+          'p' => 2,
+          'cpk_two'  => {'q' => 2},
+          'cpk_twos' => [{'q' => 2}]
+        }
       },{
-        'p' => 3,
-        'cpk_two'  => {'q' => 3},
-        'cpk_twos' => [{'q' => 1}]
+        'cpk_one' => {
+          'p' => 3,
+          'cpk_two'  => {'q' => 3},
+          'cpk_twos' => [{'q' => 1}]
+        }
       }
     ], ActiveSupport::JSON.decode(json)
   end
