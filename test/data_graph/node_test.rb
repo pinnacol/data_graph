@@ -277,7 +277,7 @@ class NodeTest < Test::Unit::TestCase
   def test_node_loads_only_included_attributes
     emp = Node.new(Emp, :include => {:job => {:only => [:id]}}).find(:first)
     assert_equal 1, emp.job.id
-    assert_raises(ActiveRecord::MissingAttributeError) { emp.job.name }
+    assert_raises(ActiveModel::MissingAttributeError) { emp.job.name }
   end
 
   def test_find_loads_unique_records_for_hmt
@@ -312,7 +312,7 @@ class NodeTest < Test::Unit::TestCase
     emp = Node.new(Emp, :only => [], :always => %w{first_name}).find(:first)
     assert_equal 1, emp.id
     assert_equal 'Kim', emp.first_name
-    assert_raises(ActiveRecord::MissingAttributeError) { emp.last_name }
+    assert_raises(ActiveModel::MissingAttributeError) { emp.last_name }
   end
 
   #
