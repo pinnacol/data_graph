@@ -12,11 +12,13 @@ module DataGraph
     attr_reader :parent_columns
     attr_reader :child_columns
     attr_reader :child_node
+    attr_reader :reflection
 
     def initialize(assoc, options={})
       @macro = assoc.macro
       @name = assoc.name
       @through = nil
+      @reflection = assoc
 
       case macro
       when :belongs_to
@@ -109,16 +111,17 @@ module DataGraph
 
     def set_child(parent, child) # :nodoc:
       if child && through
-        child = child.send(through).target
+        child = child.send(through)
       end
+
+      association = reflection.association_class.new(parent, reflection)
+      association.loaded!
 
       case macro
       when :belongs_to, :has_one
-        parent.send("set_#{name}_target", child)
+        association.target = child
       when :has_many
-        association_proxy = parent.send(name)
-        association_proxy.loaded
-        association_proxy.target.push(child) if child
+        association.target.push(child) if child
       else
         # should never get here...
       end
