@@ -2,6 +2,14 @@ require 'rubygems'
 require 'bundler/setup'
 $:.unshift File.expand_path('../models', __FILE__)
 
+if testcase = ENV['TESTCASE']
+  ARGV << "--testcase=#{testcase}"
+end
+
+if name = ENV['NAME']
+  ARGV << "--name=#{name}"
+end
+
 module WarnFilter
   FILTER_PATHS = ENV['GEM_PATH'].split(':') + [Bundler.bundle_path.to_s] + [File.expand_path('vendor')]
   @@count = 0
