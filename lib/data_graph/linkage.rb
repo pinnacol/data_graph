@@ -114,7 +114,7 @@ module DataGraph
         child = child.send(through)
       end
 
-      association = reflection.association_class.new(parent, reflection)
+      association = parent.association(name)
       association.loaded!
 
       case macro

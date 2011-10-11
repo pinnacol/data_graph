@@ -37,13 +37,13 @@ class LinkageTest < Test::Unit::TestCase
     }
 
     a, b = BtOne.find(1), BtOne.find(2)
-    assert_equal nil, a.loaded_bt?
-    assert_equal nil, b.loaded_bt?
+    assert_equal false, a.association(:bt).loaded?
+    assert_equal false, b.association(:bt).loaded?
 
     linkage(BtOne, :bt).link([a,b])
 
-    assert_equal true, a.loaded_bt?
-    assert_equal nil, b.loaded_bt?
+    assert_equal true, a.association(:bt).loaded?
+    assert_equal true, b.association(:bt).loaded?
 
     assert_equal 10, a.bt.id
     assert_equal nil, b.bt
@@ -228,13 +228,13 @@ class LinkageTest < Test::Unit::TestCase
     }
 
     a, b = HoOne.find(1), HoOne.find(2)
-    assert_equal nil, a.loaded_ho?
-    assert_equal nil, b.loaded_ho?
+    assert_equal false, a.association(:ho).loaded?
+    assert_equal false, b.association(:ho).loaded?
 
     linkage(HoOne, :ho).link([a,b])
 
-    assert_equal true, a.loaded_ho?
-    assert_equal true, b.loaded_ho?
+    assert_equal true, a.association(:ho).loaded?
+    assert_equal true, b.association(:ho).loaded?
 
     assert_equal 10, a.ho.id
     assert_equal nil, b.ho
@@ -274,13 +274,13 @@ class LinkageTest < Test::Unit::TestCase
     }
 
     a, b = HotOne.find(1), HotOne.find(2)
-    assert_equal nil, a.loaded_hot?
-    assert_equal nil, b.loaded_hot?
+    assert_equal false, a.association(:hot).loaded?
+    assert_equal false, b.association(:hot).loaded?
 
     linkage(HotOne, :hot).link([a,b])
 
-    assert_equal true, a.loaded_hot?
-    assert_equal true, b.loaded_hot?
+    assert_equal true, a.association(:hot).loaded?
+    assert_equal true, b.association(:hot).loaded?
 
     assert_equal 10, a.hot.id
     assert_equal nil, b.hot
