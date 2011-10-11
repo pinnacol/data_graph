@@ -242,8 +242,8 @@ class LinkageTest < Test::Unit::TestCase
 
   class HotOne < ActiveRecord::Base
     set_table_name 'one'
-    has_many :hm, :class_name => 'LinkageTest::HotTwo', :foreign_key => :one_id
-    has_one :hot, :through => :hm, :source => :bt
+    has_one :ho, :class_name => 'LinkageTest::HotTwo', :foreign_key => :one_id
+    has_one :hot, :through => :ho, :source => :bt
   end
 
   class HotTwo < ActiveRecord::Base
