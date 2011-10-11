@@ -50,6 +50,7 @@ module DatabaseTest
 
   def teardown
     @teardowns.each {|teardown| script(teardown, true) }
+    ActiveRecord::Base.connection_pool.clear_cache!
     super
   end
 
