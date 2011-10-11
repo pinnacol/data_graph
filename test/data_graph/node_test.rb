@@ -241,7 +241,6 @@ class NodeTest < Test::Unit::TestCase
       job_attributes.id
       job_attributes.name
       job_attributes._destroy
-      job_attributes._delete
     }
 
     assert_equal expected, node.set_paths
