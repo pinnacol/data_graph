@@ -13,35 +13,110 @@ you might expect:
 
 It's often tricky, although not impossible, to make associations that work
 correctly with include. DataGraph makes eager loading easier by providing a
-straightforward way to declare and load a specific set of associated data.
+straightforward way to declare, load, and serialize a specific set of
+associated data.
 
 == Usage
 
-DataGraph selects data using a syntax based on the serialization methods.
+DataGraph selects data using a syntax based on the ActiveRecord {serialization
+inputs}[https://github.com/rails/rails/blob/v2.3.8/activerecord/lib/active_record/serializers/xml_serializer.rb#L3]
+(specifically :only, :except, :include). Only the fields specified in the
+options are loaded from the database.
 
   require 'data_graph'
   graph = Model.data_graph(
-    :only => [:a, :b, :c],
+    :only => [:a, :b],
     :include => {
       :assoc => {
         :only => [:x, :y]
   }})
   
   data = graph.find(:first)
-  data.a                       # => 'A'
-  data.assoc.x                 # => 'X'
-  data.assoc.z                 # !> ActiveRecord::MissingAttributeError
+  data.a                         # => 'A'
+  data.b                         # => 'B'
+  data.c                         # !> ActiveRecord::MissingAttributeError
+  data.assoc.x                   # => 'X'
+  data.assoc.y                   # => 'Y'
+  data.assoc.z                   # !> ActiveRecord::MissingAttributeError
 
-Any number of associations may be specified this way, and to any nesting
-depth. DataGraph always uses a 'one query per-association' strategy and never
+Any number of associations may be eagerly loaded this way, and to any nesting
+depth.  DataGraph always uses a 'one query per-association' strategy and never
 reverts to left outer joins the way include {sometimes
 will}[https://github.com/rails/rails/blob/v2.3.8/activerecord/lib/active_record/association_preload.rb#L8].
+
+Once you have some data, the graph options can be re-used for serialization.
+
+  data.to_json(graph.options)
+  # => '{"a":"A","b":"B","assoc":{"x":"X","y":"Y"}}'
+
+Serialization options that are not relevant to DataGraph (such as :methods)
+are ignored during the query, and likewise the extra options used by DataGraph
+(:always, :aliases, :subsets) are ignored by the serializer. These extra
+options are a little funky and mostly irrelevant unless using DataGraph
+subsets.
+
+=== Subsets
+
+Subsets are a special functionality that allow DataGraph to act as a filter
+when, for instance, an API allows users to specify what data they want to
+returned from a service. In this use case some, but not all, of the data
+accessible though a model is available to the user. The set of accessible data
+can be represented by a DataGraph, and summarized as call paths, ie the method
+calls that get to some bit of data.
+
+  graph.paths                    # => ['a', 'b', 'assoc.x', 'assoc.y']
+
+Specifying a subset of these paths produces a subset graph.
+
+  subset = graph.only('a', 'assoc.x')
+  subset_data = subset.find(:first)
+  
+  subset_data.a                  # => 'A'
+  subset_data.assoc.x            # => 'X'
+  subset_data.assoc.y            # !> ActiveRecord::MissingAttributeError
+
+Just like the full graph, the subset prevents access to fields outside of the
+subset.  Inaccessible fields are simply ignored when the subset is made.
+
+  subset = graph.only('a', 'c', 'assoc.x', 'assoc.z')
+  subset.paths                   # => ['a', 'assoc.x']
+
+Aliases are a convenience to specify many paths at once. By default '*'
+represents all available columns, and an 'assoc.*' is made available to
+represent all the columns on a given association.
+
+  graph.only('*').paths          # => ['a', 'b']
+  graph.except('assoc.*').paths  # => ['a', 'b']
+
+Subsets play well with serialization. The ActiveRecord serializer allows
+specification of methods to include in the serialized output. These methods
+have nothing to do with eager loading per-se (a method doesn't know how it
+gets the data it uses) but they can be valid parts of a subset. As such they
+are present as a call path and can be used to generate subsets.
+
+In cases where a method always needs certain columns to be present (for
+instance a 'city_state' method that makes a string like "#{city}, #{state}"),
+DataGraph provides the :always option. These columns will always be queried
+from the database, but only made available directly as specified by :only or
+:except.
+
+DataGraph handles the details sorting these configs into paths and options,
+and provides convenience methods for validating user requests.
 
 == Installation
 
 DataGraph is available as a {gem}[http://rubygems.org/gems/data_graph]
 
-  % gem install data_graph
+  gem install data_graph
+
+== Development
+
+Clone the repo, bundle install, and run the tests:
+
+  bundle install
+  rake test
+
+Please report any issues {here}[https://github.com/pinnacol/data_graph/issues].
 
 == Info
 
