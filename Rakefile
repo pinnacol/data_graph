@@ -77,3 +77,9 @@ end
 
 desc 'Run the cc tests'
 task :cc => :test
+
+desc 'Run rcov'
+task :rcov do
+  ENV['RCOV'] = 'true'
+  Rake::Task["test"].invoke
+end
