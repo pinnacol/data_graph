@@ -1,6 +1,14 @@
 require 'data_graph/graph'
 
 # The DataGraph module extends ActiveRecord::Base with the data_graph helper.
+# Allows:
+#
+#   Model.data_graph(options)
+#
+# Vs:
+#
+#   DataGraph::Graph.new(DataGraph::Node.new(Model, options), options)
+#
 module DataGraph
 
   # A convenience method to generate a Graph bound to the current model.

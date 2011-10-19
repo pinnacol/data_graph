@@ -6,6 +6,28 @@ module DataGraph
   # the most part, are intended to be throwaway objects.  Specifically Graph
   # provides a way to define/resolve path aliases, and to work with named
   # subsets for quick reuse and path validation.
+  
+  # Graph is a graph (perhaps not in the strictest computer-science sense) of
+  # nodes which each correspond to an ActiveRecord model. The nodes are linked
+  # by linkages which correspond to associations.
+  #
+  # A graph is defined using a options hash that states what columns may be
+  # selected at each node, and what associations may be included using a subset of
+  # the ActiveRecord serialization syntax (specifically :only, :except, and
+  # :include).  Columns and associations that are not specified in the options
+  # cannot be selected by a graph.
+  # 
+  # Node#find delegates to the model find, and simply At a high level a graph
+  # walks down the nodes as configured, making one database query per-node to
+  # get (and only get) the necessary data, and then walks back up linking the
+  # children to parents as defined by the linkages.
+  # 
+  # Indeed if you take a look at Node and Linkage you'll see they're
+  # constructed using the information tracked by models and associations, and
+  # they have all the low-level methods for finding parents and linking them
+  # to children, as specified by the graph config. Graph is simply a
+  # high-level wrapper to use nodes more easily.
+  # 
   class Graph
     include Utils
 
