@@ -55,14 +55,17 @@ are ignored during the query, and likewise the extra options used by DataGraph
 options are a little funky and mostly irrelevant unless using DataGraph
 subsets.
 
-=== Subsets
+== Subsets (a special use case)
 
-Subsets are a special functionality that allow DataGraph to act as a filter
-when, for instance, an API allows users to specify what data they want to
-returned from a service. In this use case some, but not all, of the data
-accessible though a model is available to the user. The set of accessible data
-can be represented by a DataGraph, and summarized as call paths, ie the method
-calls that get to some bit of data.
+DataGraph was originally designed to limit access to models via a generic API.
+At one URL users could access one subset of fields, at another URL users could
+access a different subset of fields. Subsets are a special functionality that
+allow DataGraph define these subsets and to ensure that only some fields are
+accessible.
+
+The full set of accessible fields can be summarized as call paths, ie the
+chain of method calls that get to some bit of data. These are the call paths
+that return data from the example graph.
 
   graph.paths                    # => ['a', 'b', 'assoc.x', 'assoc.y']
 
@@ -75,33 +78,44 @@ Specifying a subset of these paths produces a subset graph.
   subset_data.assoc.x            # => 'X'
   subset_data.assoc.y            # !> ActiveRecord::MissingAttributeError
 
-Just like the full graph, the subset prevents access to fields outside of the
-subset.  Inaccessible fields are simply ignored when the subset is made.
+Just like the full graph, the subset prevents access to unspecified fields.
+Moreover, a graph can't make a subset that accesses an already-inaccesible
+field (ex 'c').
 
   subset = graph.only('a', 'c', 'assoc.x', 'assoc.z')
   subset.paths                   # => ['a', 'assoc.x']
 
+With these features, the generic API would consist of a 'master' graph
+detailing the full set of fields accessible from an endpoint, and a way for
+users to specify what fields they desire. The controller makes a subset based
+on the request, queries on that subset, and serializes the result.
+
+Basically:
+
+  # http://example.com/things/1234?select[]=a&?select[]=assoc.x
+  get '/things/:id' do
+    subset = master.only('a', 'assoc.x')
+    subset.find(1234).to_json(subset.options)
+  end
+
+To this end of making this API feasible, there are three DataGraph options that have no ActiveRecord analogue: :always, :aliases, and :subsets.
+
+As with ActiveRecord the :method option can be used to make methods available
+in a subset. In cases where a method needs certain columns to be present (for
+instance a 'city_state' method that makes a string from columns 'city' and
+'state'), DataGraph provides the :always option. These columns will always be
+queried from the database, and therefore available to a method, but only
+directly accessible as specified by :only or :except.
+
 Aliases are a convenience to specify many paths at once. By default '*'
 represents all available columns, and an 'assoc.*' is made available to
-represent all the columns on a given association.
+represent all the columns on an association.
 
   graph.only('*').paths          # => ['a', 'b']
   graph.except('assoc.*').paths  # => ['a', 'b']
 
-Subsets play well with serialization. The ActiveRecord serializer allows
-specification of methods to include in the serialized output. These methods
-have nothing to do with eager loading per-se (a method doesn't know how it
-gets the data it uses) but they can be valid parts of a subset. As such they
-are present as a call path and can be used to generate subsets.
-
-In cases where a method always needs certain columns to be present (for
-instance a 'city_state' method that makes a string like "#{city}, #{state}"),
-DataGraph provides the :always option. These columns will always be queried
-from the database, but only made available directly as specified by :only or
-:except.
-
-DataGraph handles the details sorting these configs into paths and options,
-and provides convenience methods for validating user requests.
+The :aliases option allows other aliases to be defined on a graph. Finally,
+the :subsets option allows graphs to predefine common subsets.
 
 == Installation
 
