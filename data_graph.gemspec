@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.require_path = 'lib'
   s.rubyforge_project = ''
   s.has_rdoc = true
-  s.rdoc_options.concat %W{--main README -S -N --title DataGraph}
+  s.rdoc_options.concat %W{--main README.rdoc -S -N --title DataGraph}
 
   # add dependencies
   s.add_dependency('activerecord', '~> 2.3.5')
@@ -21,12 +21,14 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency('sqlite3-ruby', '~> 1.2.5')
   s.add_development_dependency('bundler', '~> 1.0')
-  s.add_development_dependency('rcov', '~> 0.9')
+  s.add_development_dependency('rake', '~> 0.9.2')
+  s.add_development_dependency('rdoc', '~> 3.11')
+  s.add_development_dependency('rcov', '~> 0.9.8')
 
   # list extra rdoc files here.
   s.extra_rdoc_files = %W{
     History
-    README
+    README.rdoc
     License.txt
   }
 
