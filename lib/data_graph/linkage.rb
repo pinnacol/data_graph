@@ -12,6 +12,11 @@ module DataGraph
     attr_reader :parent_columns
     attr_reader :child_columns
     attr_reader :child_node
+    attr_reader :order
+    attr_reader :limit
+    attr_reader :group
+    attr_reader :readonly
+    attr_reader :assoc_conditions
 
     def initialize(assoc, options={})
       @macro = assoc.macro
@@ -36,6 +41,12 @@ module DataGraph
         raise "currently unsupported association macro: #{macro}"
       end
 
+      @assoc_conditions = assoc.sanitized_conditions ? " AND #{assoc.sanitized_conditions}" : nil
+      @order = options[:order]
+      @limit = options[:limit]
+      @group = options[:group]
+      @readonly = options[:readonly]
+
       klass = assoc.klass
       @child_node = Node.new(assoc.klass, options)
       @table_name = klass.table_name
@@ -55,9 +66,40 @@ module DataGraph
     end
 
     def conditions(id_map)
-      ["#{table_name}.#{connection.quote_column_name(child_columns.at(0))} IN (?)", id_map.keys.flatten]
+      ["#{table_name}.#{connection.quote_column_name(child_columns.at(0))} IN (?)#{assoc_conditions}", id_map.keys.flatten]
     end
 
+    #--
+    # Query through using the association options.
+    #
+    # BT
+    # :select     => @reflection.options[:select],   # overidden
+    # :conditions => conditions,                     # add
+    # :include    => @reflection.options[:include],  # overidden
+    # :readonly   => @reflection.options[:readonly]  # add
+    #
+    # BT-Poly
+    # :select     => @reflection.options[:select],
+    # :conditions => conditions,
+    # :include    => @reflection.options[:include]
+    # 
+    # HMT
+    # :select     => construct_select,               # overidden
+    # :conditions => construct_conditions,           # add
+    # :from       => construct_from,                 # irrelevant?
+    # :joins      => construct_joins,                # irrelevant?
+    # :order      => @reflection.options[:order],    # add
+    # :limit      => @reflection.options[:limit],    # add
+    # :group      => @reflection.options[:group],    # add
+    # :readonly   => @reflection.options[:readonly], # add
+    # :include    => @reflection.options[:include] || @reflection.source_reflection.options[:include] # overridden
+    #
+    # HO
+    # :conditions => @finder_sql,                    # add
+    # :select     => @reflection.options[:select],   # overidden
+    # :order      => @reflection.options[:order],    # add
+    # :include    => @reflection.options[:include],  # overidden
+    # :readonly   => @reflection.options[:readonly]  # add
     def link(parents)
       parents = arrayify(parents)
       return [] if parents.empty?
@@ -69,7 +111,12 @@ module DataGraph
 
       children = child_node.find(:all,
         :select => child_columns,
-        :conditions => conditions(id_map))
+        :conditions => conditions(id_map),
+        :order => order,
+        :limit => limit,
+        :group => group,
+        :readonly => readonly
+      )
       visited = []
 
       arrayify(children).each do |child|
