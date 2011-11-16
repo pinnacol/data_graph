@@ -48,22 +48,22 @@ module DataGraph
       end
     end
 
-    # Returns the node paths.
+    # Returns the node paths[rdoc-ref:DataGraph::Node#paths].
     def paths
       @paths ||= node.paths
     end
 
-    # Returns the node get_paths.
+    # Returns the node get_paths[rdoc-ref:DataGraph::Node#get_paths].
     def get_paths
       @get_paths ||= node.get_paths
     end
 
-    # Returns the node set_paths.
+    # Returns the node set_paths[rdoc-ref:DataGraph::Node#set_paths].
     def set_paths
       @set_paths ||= node.set_paths
     end
 
-    # Returns the node nest_paths.
+    # Returns the node nest_paths[rdoc-ref:DataGraph::Node#nest_paths].
     def nest_paths
       @nest_paths ||= node.nest_paths
     end
@@ -113,8 +113,9 @@ module DataGraph
     end
 
     # Validates that the paths are all accessible by the named subset.  The
-    # input paths are not resolved against aliases.  Raises an
-    # InaccessiblePathError if the paths are not accessible.
+    # input paths are not resolved against aliases.
+    #
+    # Raises an InaccessiblePathError if the paths are not accessible.
     def validate(name, paths)
       inaccessible_paths = paths - subset(name).get_paths
       unless inaccessible_paths.empty?
@@ -125,8 +126,9 @@ module DataGraph
     end
 
     # Validates that all paths in the attrs hash are assignable by the named
-    # subset.  The input paths are not resolved against aliases.  Raises an
-    # InaccessiblePathError if the paths are not accessible.
+    # subset.  The input paths are not resolved against aliases.
+    #
+    # Raises an InaccessiblePathError if the paths are not accessible.
     def validate_attrs(name, attrs)
       paths = patherize_attrs(attrs, nest_paths)
 
