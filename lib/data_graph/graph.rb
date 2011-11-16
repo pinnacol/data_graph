@@ -42,8 +42,8 @@ module DataGraph
       end
 
       if subsets = options[:subsets]
-        subsets.each_pair do |type, paths|
-          register(type, paths)
+        subsets.each_pair do |name, paths|
+          register(name, paths)
         end
       end
     end
@@ -98,25 +98,25 @@ module DataGraph
 
     # Registers a new subset defined by only(paths) and returns the new
     # subset.  Provide nil paths to unregister an existing subset.
-    def register(type, paths)
+    def register(name, paths)
       if paths.nil?
-        subsets.delete(type)
+        subsets.delete(name)
       else
-        subsets[type] = only(paths)
+        subsets[name] = only(paths)
       end
     end
 
     # Returns the specified subset.  Raises an error if the subset is not
     # registered.
-    def subset(type)
-      subsets[type] or raise "no such subset: #{type.inspect}"
+    def subset(name)
+      subsets[name] or raise "no such subset: #{name.inspect}"
     end
 
     # Validates that the paths are all accessible by the named subset.  The
     # input paths are not resolved against aliases.  Raises an
     # InaccessiblePathError if the paths are not accessible.
-    def validate(type, paths)
-      inaccessible_paths = paths - subset(type).get_paths
+    def validate(name, paths)
+      inaccessible_paths = paths - subset(name).get_paths
       unless inaccessible_paths.empty?
         raise InaccessiblePathError.new(inaccessible_paths)
       end
@@ -127,10 +127,10 @@ module DataGraph
     # Validates that all paths in the attrs hash are assignable by the named
     # subset.  The input paths are not resolved against aliases.  Raises an
     # InaccessiblePathError if the paths are not accessible.
-    def validate_attrs(type, attrs)
+    def validate_attrs(name, attrs)
       paths = patherize_attrs(attrs, nest_paths)
 
-      inaccessible_paths = paths - subset(type).set_paths
+      inaccessible_paths = paths - subset(name).set_paths
       unless inaccessible_paths.empty?
         raise InaccessiblePathError.new(inaccessible_paths)
       end
