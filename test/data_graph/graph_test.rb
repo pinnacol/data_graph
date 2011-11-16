@@ -132,19 +132,9 @@ class GraphTest < Test::Unit::TestCase
     assert_equal subset, graph.subset(:type)
   end
 
-  def test_subset_returns_default_subset_if_no_subset_is_registered_to_the_specified_type
-    assert_equal nil, graph.subsets[:type]
-
-    subset = graph.register(:default, %w{first_name last_name})
-    assert_equal subset, graph.subset(:type)
-  end
-
-  def test_subset_raises_error_if_neither_type_nor_default_are_registered
-    graph.register(:default, nil)
-    assert_equal({}, graph.subsets)
-
-    err = assert_raises(RuntimeError) { graph.subset(:type) }
-    assert_equal 'no such subset: :type', err.message
+  def test_subset_raises_error_if_type_is_not_registered
+    err = assert_raises(RuntimeError) { graph.subset(:unknown) }
+    assert_equal 'no such subset: :unknown', err.message
   end
 
   #

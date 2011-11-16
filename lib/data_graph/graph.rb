@@ -106,10 +106,10 @@ module DataGraph
       end
     end
 
-    # Returns the specified subset, or the default subset if no subset is
-    # registered to type.  Raises an error if neither subset is registered.
+    # Returns the specified subset.  Raises an error if the subset is not
+    # registered.
     def subset(type)
-      (subsets[type] || subsets[:default]) or raise "no such subset: #{type.inspect}"
+      subsets[type] or raise "no such subset: #{type.inspect}"
     end
 
     # Validates that the paths are all accessible by the named subset.  The
