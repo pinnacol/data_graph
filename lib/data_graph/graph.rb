@@ -2,32 +2,70 @@ require 'data_graph/node'
 
 module DataGraph
 
-  # Graph is a wrapper that adds high-level functionality to nodes which, for
-  # the most part, are intended to be throwaway objects.  Specifically Graph
-  # provides a way to define/resolve path aliases, and to work with named
-  # subsets for quick reuse and path validation.
-  
-  # Graph is a graph (perhaps not in the strictest computer-science sense) of
-  # nodes which each correspond to an ActiveRecord model. The nodes are linked
-  # by linkages which correspond to associations.
+  # = Understanding Graph/DataGraph
   #
-  # A graph is defined using a options hash that states what columns may be
-  # selected at each node, and what associations may be included using a subset of
-  # the ActiveRecord serialization syntax (specifically :only, :except, and
-  # :include).  Columns and associations that are not specified in the options
-  # cannot be selected by a graph.
+  # So DataGraph suffers from several dubiously named classes.  Regardless,
+  # here is the conceptual breakdown:
+  #
+  #   Graph      a wrapper for a Node, providing a useful interface
+  #   Node       corresponds to a model
+  #   Linkage    corresponds to an association
+  #
+  # The 'graph' in DataGraph is composed of nodes where edges are linkages, or
+  # equivalently models joined by associations.  Note, however the 'graph' is
+  # really just a tree because nodes are not re-used... if associations link
+  # back to a model, then there will be two nodes for that model.
+  #
+  #   [job] -> [employee] -> [job]
+  #
+  # Nodes provide methods to traverse linkages to other nodes in order to
+  # query records, determine paths, or create serialization parameters.  It's
+  # essentially a lot of visitation and aggregation, based on the graph
+  # options.
   # 
-  # Node#find delegates to the model find, and simply At a high level a graph
-  # walks down the nodes as configured, making one database query per-node to
-  # get (and only get) the necessary data, and then walks back up linking the
-  # children to parents as defined by the linkages.
+  # Note that the options apply differently in queries, paths, and
+  # serialization. For example, :methods are included in paths and
+  # serialization (because you can't query a method from a database, only a
+  # column). By contrast, :always is only included in queries.
+  #
+  # == Queries
+  #
+  # During a query, the node for a graph will scope normal ActiveRecord#find
+  # options using the node conditions.  Specifically the find options will be
+  # adjusted such that:
+  #
+  #   * columns disallowed by :only/:except are removed
+  #   * :always columns are added
+  #   * the id/foreign keys required for :include are added
+  #
+  # Then, using the results as parents records, the node traverses linkages to
+  # adjacent nodes and finds child records.  Once all the nodes have been
+  # traversed, the children are linked back with their parents.
   # 
-  # Indeed if you take a look at Node and Linkage you'll see they're
-  # constructed using the information tracked by models and associations, and
-  # they have all the low-level methods for finding parents and linking them
-  # to children, as specified by the graph config. Graph is simply a
-  # high-level wrapper to use nodes more easily.
+  # In other words, graphs use a 'one query per-association' query strategy to
+  # eagerly load all data specified by the graph.  All unspecified data is
+  # unavailable.  The nodes do not actually do the finds themselves, instead
+  # they proxy to ActiveRecord#find to do the work.
   # 
+  # == Paths
+  #
+  # As with queries, a node determines what paths are available to it by
+  # traversing the nodes and linking all the methods that can be called at
+  # each node.  The methods available at each level are:
+  #
+  #  * columns allowed by :only/:except
+  #  * :methods
+  #  * the methods to access each :include association
+  # 
+  # Paths can be used to create subset graphs where the subset graph is
+  # further constrained to the subset paths.
+  #
+  # == Serialization Options
+  #
+  # The same traversal technique is used to put together serialization
+  # options.  Serialization options represent the same information as in
+  # paths, but in a hash format that works with ActiveRecord::Serialization.
+  #
   class Graph
     include Utils
 
