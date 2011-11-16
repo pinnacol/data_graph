@@ -2,6 +2,67 @@ require 'data_graph/cpk_linkage'
 
 module DataGraph
 
+  # Node and Linkage correspond to ActiveRecord models and associations.  A
+  # node linked to other nodes comprise a graph of accessible data.
+  #
+  # Node has methods to traverse a graph in order to query records, determine
+  # paths, or create serialization parameters.  It's essentially a lot of
+  # visitation and aggregation, based on the Node configuration.
+  #
+  # == Configuration
+  #
+  # These configurations are available to each node:
+  #
+  # only::    An array of allowed column names
+  # except::  An array of disallowed column names
+  # methods:: An array of allowed method names
+  # include:: A hash of (association name, config) pairs detailing allowed
+  #           associations and the configs for each associated node.  May be
+  #           nested.
+  # always::  An array of column names to always be queried (but still only
+  #           allowed as per :only/:except)
+  #
+  # Note that the configs apply differently in queries and paths/
+  # serialization. For example, :methods are included in paths and
+  # serialization (because you don't query methods from a database, only
+  # columns). By contrast, :always is only included in queries.
+  #
+  # == Queries
+  #
+  # During a query, the node for a graph will scope normal ActiveRecord#find
+  # options using the node configs.  Specifically the find options will be
+  # adjusted such that:
+  #
+  # * columns disallowed by :only/:except are removed
+  # * :always columns are added
+  # * the id/foreign keys required for :include are added
+  #
+  # Then, using the results as parents records, the node traverses linkages to
+  # adjacent nodes and finds child records.  Once all the nodes have been
+  # traversed, the children are linked back with their parents.
+  # 
+  # In other words, nodes use a 'one query per-association' query strategy to
+  # eagerly load all data specified in a graph.  All unspecified data is
+  # unavailable.  The nodes do not actually do the finds themselves, instead
+  # they proxy to ActiveRecord#find to do the work.
+  # 
+  # == Paths / Serialization Options
+  #
+  # As with queries, a node determines what paths are available to it by
+  # traversing the nodes and linking all the methods that can be called at
+  # each node.  The methods available at each level are:
+  #
+  # * columns allowed by :only/:except
+  # * :methods
+  # * the methods to access each :include association
+  # 
+  # Paths can be used to create subset graphs where the subset is further
+  # constrained to a subset of paths. Subsetting via only/except cannot
+  # introduce a path that does not already exist.
+  #
+  # Serialization options represent the same information as in paths, but in a
+  # hash format that works with ActiveRecord::Serialization.
+  #
   #-- Treated as immutable once created.
   class Node
     include Utils
